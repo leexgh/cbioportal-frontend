@@ -13,6 +13,7 @@ export default class InfoBanner extends React.Component<IInfoBannerProps, {}> {
             <div className='alert alert-success' style={{marginTop: '10px', marginBottom: '0'}}>
                 <span>
                     <i className='fa fa-md fa-check'/> {this.props.message}
+                    {"123"}
                 </span>
             </div>
         );
