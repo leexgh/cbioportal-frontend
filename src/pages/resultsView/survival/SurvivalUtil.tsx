@@ -2,6 +2,7 @@ import { PatientSurvival } from '../../../shared/model/PatientSurvival';
 import { tsvFormat } from 'd3-dsv';
 import jStat from 'jStat';
 import * as _ from 'lodash';
+import { ClinicalAttribute } from 'shared/api/generated/CBioPortalAPI';
 
 export type ScatterData = {
     x: number;
@@ -34,6 +35,36 @@ export type SurvivalCurveData = {
 export type SurvivalPlotFilters = {
     x: [number, number];
     y: [number, number];
+};
+
+// TODO should remove this if we want to be generic
+export const survivalClinicalDataVocabulary: { [prefix: string]: string[] } = {
+    OS: ['DECEASED'],
+    PFS: ['CENSORED'],
+    DFS: ['Recurred/Progressed', 'Recurred'],
+    DSS: ['DEAD WITH TUMOR'],
+    EFS: ['Censored'],
+};
+
+// TODO should remove this if we want to be generic
+export const survivalPlotTooltipxLabelWithEvent: {
+    [prefix: string]: string;
+} = {
+    // TODO text for PFS DSS EFS?
+    OS: 'Time of Death',
+    PFS: 'Time of Death',
+    DFS: 'Time of relapse',
+    DSS: 'Time of Death',
+    EFS: 'Time of Death',
+};
+
+// TODO should remove this if we want to be generic
+export const plotsPriority: { [prefix: string]: number } = {
+    OS: 1,
+    DFS: 2,
+    PFS: 3,
+    DSS: 4,
+    EFS: 5,
 };
 
 export function getEstimates(patientSurvivals: PatientSurvival[]): number[] {
@@ -369,4 +400,21 @@ export function getSurvivalChartDataByAlteredStatus(
         patientSurvivals: alteredSurvivals.concat(unalteredSurvivals),
         patientToAnalysisGroups,
     };
+}
+
+export function generateSurvivalPlotTitleFromDisplayName(title: string) {
+    return title.replace(/status|survival/gi, '');
+}
+
+export function generateStudyViewSurvivalPlotTitle(title: string) {
+    let result = title.replace(/status/gi, '');
+    return /survival/i.test(result) ? result : `${result} Survival`;
+}
+
+export function getSurvivalAttributes(clinicalAttributes: ClinicalAttribute[]) {
+    return _.chain(clinicalAttributes)
+        .map(attr => attr.clinicalAttributeId)
+        .filter(id => /_STATUS$/i.test(id) || /_MONTHS$/i.test(id))
+        .uniq()
+        .value();
 }
