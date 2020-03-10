@@ -127,7 +127,8 @@ export default class ComparisonTab extends React.Component<
                     unmountOnHide={false}
                     activeTabId={this.props.urlWrapper.comparisonSubTabId}
                     onTabClick={this.props.urlWrapper.setComparisonSubTabId}
-                    className="secondaryNavigation comparisonTabSubTabs"
+                    className="comparisonTabSubTabs"
+                    tabsClassName="secondaryNavigation"
                 >
                     <MSKTab
                         id={ResultsViewComparisonSubTab.OVERLAP}

@@ -110,6 +110,7 @@ interface IMSKTabsProps {
     tabButtonStyle?: string;
     unmountOnHide?: boolean;
     loadingComponent?: JSX.Element;
+    tabsClassName?: string;
 }
 
 export class MSKTabs extends React.Component<IMSKTabsProps, IMSKTabsState> {
@@ -333,7 +334,25 @@ export class MSKTabs extends React.Component<IMSKTabsProps, IMSKTabsState> {
 
         const navButtonStyle: string = this.props.tabButtonStyle || 'tabs';
 
-        return (
+        return this.props.tabsClassName ? (
+            <div className={this.props.tabsClassName}>
+                <ul
+                    ref={this.navTabsRefHandler.bind(this)}
+                    className={classnames('nav', `nav-${navButtonStyle}`)}
+                    style={navBarStyle}
+                >
+                    {prev}
+                    {pages[this.state.currentPage - 1]}
+                    {next}
+                    {
+                        // TODO this doesn't always calculate the page size properly after resize, disabling for now
+                        // this.props.enablePagination && (
+                        //     <ReactResizeDetector handleWidth={true} onResize={this.initOnResize.bind(this)()} />
+                        // )
+                    }
+                </ul>
+            </div>
+        ) : (
             <ul
                 ref={this.navTabsRefHandler.bind(this)}
                 className={classnames('nav', `nav-${navButtonStyle}`)}

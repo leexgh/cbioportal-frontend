@@ -415,9 +415,7 @@ export default class Survival extends React.Component<ISurvivalProps, {}> {
                             survivalPlotStyle['survivalPlotHeaderContainer']
                         }
                     >
-                        <div
-                            className={survivalPlotStyle['survivalPlotHeader']}
-                        >
+                        <div className={'pillTabs'}>
                             <ul className={'nav nav-pills'}>{plotHeader}</ul>
                         </div>
                     </div>

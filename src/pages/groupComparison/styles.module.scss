@@ -1,3 +1,4 @@
+@import '../../globalStyles/variables.scss';
 :global(.msk-tabs .tabAnchor.greyedOut) {
     color: #afafaf;
 }
@@ -98,38 +99,9 @@
     }
 }
 .survivalPlotHeaderContainer {
+    margin-top: $standardMargin;
     display: flex;
     margin-right: 5px;
-}
-
-.survivalPlotHeader {
-    > :global(.nav.nav-pills) {
-        margin-bottom: $standardMargin;
-        li {
-            margin-bottom: 2px;
-            a {
-                background: #eee !important;
-                border-top: none !important;
-                padding: 10px 6px !important;
-                margin-right: 6px !important;
-            }
-            &:global(.active) a {
-                background: $brand-primary !important;
-                border-top: none !important;
-                border-bottom: 0px !important;
-                &:hover {
-                    color: #fff !important;
-                }
-            }
-        }
-    }
-    li a {
-        font-size: 12px;
-        padding: 10px 6px !important;
-        cursor: pointer;
-        line-height: 0.8px;
-        text-decoration: none !important;
-    }
 }
 
 .survivalTypeOptions {
