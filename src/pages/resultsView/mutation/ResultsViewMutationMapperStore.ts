@@ -76,7 +76,8 @@ export default class ResultsViewMutationMapperStore extends MutationMapperStore 
             indexedVariantAnnotations,
             oncoKbCancerGenes,
             oncoKbData,
-            uniqueSampleKeyToTumorType
+            uniqueSampleKeyToTumorType,
+            false
         );
 
         labelMobxPromises(this);
