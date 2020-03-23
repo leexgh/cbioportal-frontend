@@ -14,9 +14,12 @@ import {
     getGenomeNexusApiUrl,
     getOncoKbApiUrl,
     trimTrailingSlash,
+    getGenomeNexusGrch38ApiUrl,
 } from '../shared/api/urls';
 import genomeNexusClient from '../shared/api/genomeNexusClientInstance';
 import internalGenomeNexusClient from '../shared/api/genomeNexusInternalClientInstance';
+import genomeNexusGrch38Client from '../shared/api/genomeNexusGrch38ClientInstance';
+import internalGenomeNexusGrch38Client from '../shared/api/genomeNexusInternalGrch38ClientInstance';
 import oncoKBClient from '../shared/api/oncokbClientInstance';
 import genome2StructureClient from '../shared/api/g2sClientInstance';
 import client from '../shared/api/cbioportalClientInstance';
@@ -184,6 +187,8 @@ export function initializeAPIClients() {
     (internalClient as any).domain = getCbioPortalApiUrl();
     (genomeNexusClient as any).domain = getGenomeNexusApiUrl();
     (internalGenomeNexusClient as any).domain = getGenomeNexusApiUrl();
+    (genomeNexusGrch38Client as any).domain = getGenomeNexusGrch38ApiUrl();
+    (internalGenomeNexusGrch38Client as any).domain = getGenomeNexusGrch38ApiUrl();
     (oncoKBClient as any).domain = getOncoKbApiUrl();
     (genome2StructureClient as any).domain = getG2SApiUrl();
 
@@ -222,6 +227,8 @@ export function initializeConfiguration() {
     const APIROOT = `${ENV_CBIOPORTAL_URL}/`;
     // @ts-ignore: ENV_* are defined in webpack.config.js
     const GENOME_NEXUS_ROOT = `${ENV_GENOME_NEXUS_URL}/`;
+    // @ts-ignore: ENV_* are defined in webpack.config.js
+    const GENOME_NEXUS_GRCH38_ROOT = `${ENV_GENOME_NEXUS_URL_GRCH38}/`;
 
     // we want to respect frontUrl if it is already set (case where localdist is true)
     // @ts-ignore: ENV_* are defined in webpack.config.js
@@ -241,6 +248,7 @@ export function initializeConfiguration() {
             frontendUrl: frontendUrl,
             serverConfig: {
                 genomenexus_url: GENOME_NEXUS_ROOT,
+                genomenexus_url_grch38: GENOME_NEXUS_GRCH38_ROOT,
             } as IServerConfig,
         };
         updateConfig(envConfig);

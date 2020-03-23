@@ -15,6 +15,8 @@ import {
 
 import genomeNexusClient from 'shared/api/genomeNexusClientInstance';
 import internalGenomeNexusClient from 'shared/api/genomeNexusInternalClientInstance';
+import genomeNexusGrch38Client from 'shared/api/genomeNexusGrch38ClientInstance';
+import internalGenomeNexusGrch38Client from 'shared/api/genomeNexusInternalGrch38ClientInstance';
 import oncoKBClient from 'shared/api/oncokbClientInstance';
 import { Gene, Mutation } from 'shared/api/generated/CBioPortalAPI';
 import {
@@ -71,7 +73,10 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
         >,
         public oncoKbCancerGenes: MobxPromise<CancerGene[] | Error>,
         public oncoKbData: MobxPromise<IOncoKbData | Error>,
-        public uniqueSampleKeyToTumorType: { [uniqueSampleKey: string]: string }
+        public uniqueSampleKeyToTumorType: {
+            [uniqueSampleKey: string]: string;
+        },
+        public isGrch38: boolean
     ) {
         super(
             gene,
@@ -101,10 +106,16 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
                     this.mutationMapperConfig.uniprot_id_url || undefined,
                 genomeNexusUrl:
                     this.mutationMapperConfig.genomenexus_url || undefined,
+                genomeNexusUrlGrch38:
+                    this.mutationMapperConfig.genomenexus_url_grch38 ||
+                    undefined,
                 oncoKbUrl: getOncoKbApiUrl() || undefined,
+                isGrch38: this.isGrch38,
             },
             genomeNexusClient,
             internalGenomeNexusClient,
+            genomeNexusGrch38Client,
+            internalGenomeNexusGrch38Client,
             oncoKBClient
         );
     }

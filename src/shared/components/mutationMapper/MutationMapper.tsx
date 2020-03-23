@@ -42,6 +42,10 @@ import {
 import WindowStore from '../window/WindowStore';
 
 import styles from './mutationMapper.module.scss';
+import GenomeNexusGrch38Cache from 'shared/cache/GenomeNexusGrch38Cache';
+import GenomeNexusMutationAssessorGrch38Cache from 'shared/cache/GenomeNexusMutationAssessorGrch38Cache';
+import GenomeNexusMyVariantInfoGrch38Cache from 'shared/cache/GenomeNexusMyVariantInfoGrch38Cache';
+import PdbHeaderGrch38Cache from 'shared/cache/PdbHeaderGrch38Cache';
 
 export interface IMutationMapperProps {
     store: MutationMapperStore;
@@ -59,11 +63,16 @@ export interface IMutationMapperProps {
     studyId?: string;
     myCancerGenomeData?: IMyCancerGenomeData;
     pdbHeaderCache?: PdbHeaderCache;
+    pdbHeaderGrch38Cache?: PdbHeaderGrch38Cache;
     genomeNexusCache?: GenomeNexusCache;
     genomeNexusMutationAssessorCache?: GenomeNexusMutationAssessorCache;
     genomeNexusMyVariantInfoCache?: GenomeNexusMyVariantInfoCache;
+    genomeNexusGrch38Cache?: GenomeNexusGrch38Cache;
+    genomeNexusMutationAssessorGrch38Cache?: GenomeNexusMutationAssessorGrch38Cache;
+    genomeNexusMyVariantInfoGrch38Cache?: GenomeNexusMyVariantInfoGrch38Cache;
     // server config properties
     genomeNexusUrl?: string;
+    genomeNexusUrlGrch38?: string;
     oncoKbPublicApiUrl?: string;
     isoformOverrideSource?: string;
     myGeneInfoUrlTemplate?: string;
@@ -74,6 +83,7 @@ export interface IMutationMapperProps {
     enableHotspot?: boolean;
     enableMyCancerGenome?: boolean;
     enableCivic?: boolean;
+    isGrch38?: boolean;
 }
 
 @observer

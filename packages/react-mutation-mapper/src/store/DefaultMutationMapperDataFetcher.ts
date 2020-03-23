@@ -37,6 +37,8 @@ import {
     initGenomeNexusInternalClient,
     initOncoKbClient,
     ONCOKB_DEFAULT_DATA,
+    initGenomeNexusGrch38Client,
+    initGenomeNexusInternalGrch38Client,
 } from '../util/DataFetcherUtils';
 import { getMyVariantInfoAnnotationsFromIndexedVariantAnnotations } from '../util/VariantAnnotationUtils';
 import { uniqueGenomicLocations } from '../util/MutationUtils';
@@ -48,18 +50,24 @@ export interface MutationMapperDataFetcherConfig {
     cachePostMethodsOnClients?: boolean;
     apiCacheLimit?: number;
     genomeNexusUrl?: string;
+    genomeNexusUrlGrch38?: string;
     oncoKbUrl?: string;
+    isGrch38?: boolean;
 }
 
 export class DefaultMutationMapperDataFetcher {
     public oncoKbClient: OncoKbAPI;
     public genomeNexusClient: GenomeNexusAPI;
     public genomeNexusInternalClient: GenomeNexusAPIInternal;
+    public genomeNexusGrch38Client: GenomeNexusAPI;
+    public genomeNexusInternalGrch38Client: GenomeNexusAPIInternal;
 
     constructor(
         private config: MutationMapperDataFetcherConfig,
         genomeNexusClient?: Partial<GenomeNexusAPI>,
         genomeNexusInternalClient?: Partial<GenomeNexusAPIInternal>,
+        genomeNexusGrch38Client?: Partial<GenomeNexusAPI>,
+        genomeNexusInternalGrch38Client?: Partial<GenomeNexusAPIInternal>,
         oncoKbClient?: Partial<OncoKbAPI>
     ) {
         this.genomeNexusClient =
@@ -73,6 +81,20 @@ export class DefaultMutationMapperDataFetcher {
             (genomeNexusInternalClient as GenomeNexusAPIInternal) ||
             initGenomeNexusInternalClient(
                 config.genomeNexusUrl,
+                config.cachePostMethodsOnClients,
+                config.apiCacheLimit
+            );
+        this.genomeNexusGrch38Client =
+            (genomeNexusGrch38Client as GenomeNexusAPI) ||
+            initGenomeNexusGrch38Client(
+                config.genomeNexusUrlGrch38,
+                config.cachePostMethodsOnClients,
+                config.apiCacheLimit
+            );
+        this.genomeNexusInternalGrch38Client =
+            (genomeNexusInternalGrch38Client as GenomeNexusAPIInternal) ||
+            initGenomeNexusInternalGrch38Client(
+                config.genomeNexusUrlGrch38,
                 config.cachePostMethodsOnClients,
                 config.apiCacheLimit
             );
@@ -120,7 +142,9 @@ export class DefaultMutationMapperDataFetcher {
 
     public async fetchPfamDomainData(
         pfamAccessions: string[],
-        client: GenomeNexusAPI = this.genomeNexusClient
+        client: GenomeNexusAPI = this.config.isGrch38
+            ? this.genomeNexusGrch38Client
+            : this.genomeNexusClient
     ): Promise<PfamDomain[]> {
         return await client.fetchPfamDomainsByPfamAccessionPOST({
             pfamAccessions: pfamAccessions,
@@ -131,7 +155,9 @@ export class DefaultMutationMapperDataFetcher {
         mutations: Partial<Mutation>[],
         fields: string[] = ['annotation_summary'],
         isoformOverrideSource: string = 'uniprot',
-        client: GenomeNexusAPI = this.genomeNexusClient
+        client: GenomeNexusAPI = this.config.isGrch38
+            ? this.genomeNexusGrch38Client
+            : this.genomeNexusClient
     ): Promise<{ [genomicLocation: string]: VariantAnnotation }> {
         return await fetchVariantAnnotationsIndexedByGenomicLocation(
             mutations,
@@ -144,7 +170,9 @@ export class DefaultMutationMapperDataFetcher {
     public async fetchMyVariantInfoAnnotationsIndexedByGenomicLocation(
         mutations: Partial<Mutation>[],
         isoformOverrideSource: string = 'uniprot',
-        client: GenomeNexusAPI = this.genomeNexusClient
+        client: GenomeNexusAPI = this.config.isGrch38
+            ? this.genomeNexusGrch38Client
+            : this.genomeNexusClient
     ): Promise<{ [genomicLocation: string]: MyVariantInfo }> {
         const indexedVariantAnnotations = await fetchVariantAnnotationsIndexedByGenomicLocation(
             mutations,
@@ -165,7 +193,9 @@ export class DefaultMutationMapperDataFetcher {
         hugoSymbol: string,
         isoformOverrideSource: string,
         allTranscripts: EnsemblTranscript[] | undefined,
-        client: GenomeNexusAPI = this.genomeNexusClient
+        client: GenomeNexusAPI = this.config.isGrch38
+            ? this.genomeNexusGrch38Client
+            : this.genomeNexusClient
     ): Promise<EnsemblTranscript | undefined> {
         return this.fetchCanonicalTranscript(
             hugoSymbol,
@@ -184,7 +214,9 @@ export class DefaultMutationMapperDataFetcher {
     public async fetchCanonicalTranscript(
         hugoSymbol: string,
         isoformOverrideSource: string,
-        client: GenomeNexusAPI = this.genomeNexusClient
+        client: GenomeNexusAPI = this.config.isGrch38
+            ? this.genomeNexusGrch38Client
+            : this.genomeNexusClient
     ): Promise<EnsemblTranscript> {
         return await client.fetchCanonicalEnsemblTranscriptByHugoSymbolGET({
             hugoSymbol,
@@ -194,7 +226,9 @@ export class DefaultMutationMapperDataFetcher {
 
     public async fetchEnsemblTranscriptsByEnsemblFilter(
         ensemblFilter: Partial<EnsemblFilter>,
-        client: GenomeNexusAPI = this.genomeNexusClient
+        client: GenomeNexusAPI = this.config.isGrch38
+            ? this.genomeNexusGrch38Client
+            : this.genomeNexusClient
     ): Promise<EnsemblTranscript[] | undefined> {
         return await client.fetchEnsemblTranscriptsByEnsemblFilterPOST({
             ensemblFilter: Object.assign(
@@ -212,7 +246,9 @@ export class DefaultMutationMapperDataFetcher {
 
     public fetchPtmData(
         ensemblId: string,
-        client: GenomeNexusAPI = this.genomeNexusClient
+        client: GenomeNexusAPI = this.config.isGrch38
+            ? this.genomeNexusGrch38Client
+            : this.genomeNexusClient
     ): Promise<PostTranslationalModification[]> {
         if (ensemblId) {
             return client.fetchPostTranslationalModificationsGET({
@@ -225,7 +261,9 @@ export class DefaultMutationMapperDataFetcher {
 
     public fetchCancerHotspotData(
         ensemblId: string,
-        client: GenomeNexusAPIInternal = this.genomeNexusInternalClient
+        client: GenomeNexusAPIInternal = this.config.isGrch38
+            ? this.genomeNexusInternalGrch38Client
+            : this.genomeNexusInternalClient
     ): Promise<Hotspot[]> {
         if (ensemblId) {
             return client.fetchHotspotAnnotationByTranscriptIdGET({
@@ -238,7 +276,9 @@ export class DefaultMutationMapperDataFetcher {
 
     public fetchAggregatedHotspotsData(
         mutations: Mutation[],
-        client: GenomeNexusAPIInternal = this.genomeNexusInternalClient
+        client: GenomeNexusAPIInternal = this.config.isGrch38
+            ? this.genomeNexusInternalGrch38Client
+            : this.genomeNexusInternalClient
     ): Promise<AggregatedHotspots[]> {
         // TODO filter out non-hotspot genes
 

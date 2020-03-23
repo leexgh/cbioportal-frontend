@@ -62,6 +62,7 @@ interface DefaultMutationMapperStoreConfig {
     isoformOverrideSource?: string;
     filterMutationsBySelectedTranscript?: boolean;
     genomeNexusUrl?: string;
+    genomeNexusUrlGrch38?: string;
     oncoKbUrl?: string;
     enableCivic?: boolean;
     cachePostMethodsOnClients?: boolean;
@@ -72,6 +73,7 @@ interface DefaultMutationMapperStoreConfig {
     selectionFilters?: DataFilter[];
     highlightFilters?: DataFilter[];
     groupFilters?: { group: string; filter: DataFilter }[];
+    isGrch38?: boolean;
 }
 
 class DefaultMutationMapperStore implements MutationMapperStore {
@@ -189,12 +191,27 @@ class DefaultMutationMapperStore implements MutationMapperStore {
 
     @computed
     public get dataFetcher(): DefaultMutationMapperDataFetcher {
-        return new DefaultMutationMapperDataFetcher({
-            genomeNexusUrl: this.config.genomeNexusUrl,
-            oncoKbUrl: this.config.oncoKbUrl,
-            cachePostMethodsOnClients: this.config.cachePostMethodsOnClients,
-            apiCacheLimit: this.config.apiCacheLimit,
-        });
+        if (this.config.isGrch38) {
+            return new DefaultMutationMapperDataFetcher({
+                genomeNexusUrl: this.config.genomeNexusUrl,
+                genomeNexusUrlGrch38: this.config.genomeNexusUrlGrch38,
+                oncoKbUrl: this.config.oncoKbUrl,
+                cachePostMethodsOnClients: this.config
+                    .cachePostMethodsOnClients,
+                apiCacheLimit: this.config.apiCacheLimit,
+                isGrch38: true,
+            });
+        } else {
+            return new DefaultMutationMapperDataFetcher({
+                genomeNexusUrl: this.config.genomeNexusUrl,
+                genomeNexusUrlGrch38: this.config.genomeNexusUrlGrch38,
+                oncoKbUrl: this.config.oncoKbUrl,
+                cachePostMethodsOnClients: this.config
+                    .cachePostMethodsOnClients,
+                apiCacheLimit: this.config.apiCacheLimit,
+                isGrch38: false,
+            });
+        }
     }
 
     @computed

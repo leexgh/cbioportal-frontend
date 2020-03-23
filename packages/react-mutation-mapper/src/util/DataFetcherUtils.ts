@@ -18,6 +18,7 @@ export const DEFAULT_MY_GENE_URL_TEMPLATE =
 export const DEFAULT_UNIPROT_ID_URL_TEMPLATE =
     'https://www.uniprot.org/uniprot/?query=accession:<%= swissProtAccession %>&format=tab&columns=entry+name';
 export const DEFAULT_GENOME_NEXUS_URL = 'https://www.genomenexus.org/';
+export const DEFAULT_GENOME_NEXUS_URL_GRCH38 = 'http://localhost:38080/';
 
 // The legacy instance does not require an authentication but the data will not be update.
 export const DEFAULT_ONCO_KB_URL = 'https://legacy.oncokb.org/';
@@ -26,6 +27,7 @@ export const ONCOKB_DEFAULT_DATA: IOncoKbData = {
 };
 
 const DEFAULT_GENOME_NEXUS_CLIENT = initGenomeNexusClient();
+const DEFAULT_GENOME_NEXUS_GRCH38_CLIENT = initGenomeNexusGrch38Client();
 
 export function getUrl(urlTemplate: string, templateVariables: any) {
     return _.template(urlTemplate)(templateVariables);
@@ -80,6 +82,22 @@ export function initGenomeNexusClient(
     return client;
 }
 
+export function initGenomeNexusGrch38Client(
+    genomeNexusGrch38Url?: string,
+    cachePostMethods?: boolean,
+    apiCacheLimit?: number
+): GenomeNexusAPI {
+    const client = new GenomeNexusAPI(
+        genomeNexusGrch38Url || DEFAULT_GENOME_NEXUS_URL_GRCH38
+    );
+
+    if (cachePostMethods) {
+        cachePostMethodsOnClient(GenomeNexusAPI, [], /POST$/, apiCacheLimit);
+    }
+
+    return client;
+}
+
 export function initGenomeNexusInternalClient(
     genomeNexusUrl?: string,
     cachePostMethods?: boolean,
@@ -87,6 +105,27 @@ export function initGenomeNexusInternalClient(
 ): GenomeNexusAPIInternal {
     const client = new GenomeNexusAPIInternal(
         genomeNexusUrl || DEFAULT_GENOME_NEXUS_URL
+    );
+
+    if (cachePostMethods) {
+        cachePostMethodsOnClient(
+            GenomeNexusAPIInternal,
+            [],
+            /POST$/,
+            apiCacheLimit
+        );
+    }
+
+    return client;
+}
+
+export function initGenomeNexusInternalGrch38Client(
+    genomeNexusGrch38Url?: string,
+    cachePostMethods?: boolean,
+    apiCacheLimit?: number
+): GenomeNexusAPIInternal {
+    const client = new GenomeNexusAPIInternal(
+        genomeNexusGrch38Url || DEFAULT_GENOME_NEXUS_URL_GRCH38
     );
 
     if (cachePostMethods) {

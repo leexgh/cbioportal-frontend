@@ -69,6 +69,8 @@ export type MutationMapperProps = {
     pubMedCache?: MobxCache;
     // TODO annotateMutations?: boolean;
     genomeNexusUrl?: string;
+    genomeNexusUrlGrch38?: string;
+    isGrch38?: boolean;
     oncoKbUrl?: string;
     enableCivic?: boolean;
     cachePostMethodsOnClients?: boolean;
@@ -107,6 +109,7 @@ export function initDefaultMutationMapperStore(props: MutationMapperProps) {
             filterMutationsBySelectedTranscript:
                 props.filterMutationsBySelectedTranscript,
             genomeNexusUrl: props.genomeNexusUrl,
+            genomeNexusUrlGrch38: props.genomeNexusUrlGrch38,
             oncoKbUrl: props.oncoKbUrl,
             enableCivic: props.enableCivic,
             cachePostMethodsOnClients: props.cachePostMethodsOnClients,
@@ -117,6 +120,7 @@ export function initDefaultMutationMapperStore(props: MutationMapperProps) {
             selectionFilters: props.selectionFilters,
             highlightFilters: props.highlightFilters,
             groupFilters: props.groupFilters,
+            isGrch38: props.isGrch38,
         },
         () => (props.data || []) as Mutation[],
         props.filterApplier,

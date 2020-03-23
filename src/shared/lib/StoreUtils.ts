@@ -47,6 +47,7 @@ import {
 } from 'shared/api/generated/CBioPortalAPIInternal';
 import oncokbClient from 'shared/api/oncokbClientInstance';
 import genomeNexusClient from 'shared/api/genomeNexusClientInstance';
+import genomeNexusGrch38Client from 'shared/api/genomeNexusGrch38ClientInstance';
 import {
     generateAnnotateStructuralVariantQuery,
     generateCopyNumberAlterationQuery,

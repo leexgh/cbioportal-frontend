@@ -3,7 +3,13 @@ import { inject, observer } from 'mobx-react';
 import { action, computed, observable } from 'mobx';
 import autobind from 'autobind-decorator';
 import { Collapse } from 'react-collapse';
-import { ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
+import {
+    ControlLabel,
+    FormControl,
+    FormGroup,
+    ButtonGroup,
+    Radio,
+} from 'react-bootstrap';
 import { PageLayout } from 'shared/components/PageLayout/PageLayout';
 import Helmet from 'react-helmet';
 
@@ -23,6 +29,11 @@ interface IMutationMapperToolProps {
     routing: any;
 }
 
+export const referenceGenome = {
+    GRCH37: 'GRCh37',
+    GRCH38: 'GRCh38',
+};
+
 @inject('routing')
 @observer
 export default class MutationMapperTool extends React.Component<
@@ -38,6 +49,7 @@ export default class MutationMapperTool extends React.Component<
     @observable inputFileContent: string | undefined;
     @observable showIncorrectInput = false;
     @observable lastParsedInputContent: string | undefined;
+    @observable referenceGenomeSelection: string = referenceGenome.GRCH37;
 
     private store: MutationMapperToolStore = new MutationMapperToolStore();
 
@@ -252,7 +264,49 @@ export default class MutationMapperTool extends React.Component<
                     </p>
 
                     {this.dataFormatToggler()}
-
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <strong style={{ paddingRight: '5px' }}>
+                            Select Reference Genome:{' '}
+                        </strong>
+                        <ButtonGroup>
+                            <Radio
+                                checked={
+                                    this.referenceGenomeSelection ===
+                                    referenceGenome.GRCH37
+                                }
+                                onChange={() => {
+                                    this.referenceGenomeSelection =
+                                        referenceGenome.GRCH37;
+                                    this.handleUpdateReferenceGenomeSelection(
+                                        this.referenceGenomeSelection ===
+                                            referenceGenome.GRCH38
+                                    );
+                                }}
+                                inline
+                                data-value={referenceGenome.GRCH37}
+                            >
+                                {referenceGenome.GRCH37}
+                            </Radio>
+                            <Radio
+                                checked={
+                                    this.referenceGenomeSelection ===
+                                    referenceGenome.GRCH38
+                                }
+                                onChange={() => {
+                                    this.referenceGenomeSelection =
+                                        referenceGenome.GRCH38;
+                                    this.handleUpdateReferenceGenomeSelection(
+                                        this.referenceGenomeSelection ===
+                                            referenceGenome.GRCH38
+                                    );
+                                }}
+                                inline
+                                data-value={referenceGenome.GRCH38}
+                            >
+                                {referenceGenome.GRCH38}
+                            </Radio>
+                        </ButtonGroup>
+                    </div>
                     <FormGroup controlId="standaloneMutationTextInput">
                         <ControlLabel>
                             Copy and paste your own mutation data
@@ -475,12 +529,29 @@ export default class MutationMapperTool extends React.Component<
                             genomeNexusMyVariantInfoCache={
                                 this.store.genomeNexusMyVariantInfoCache
                             }
+                            genomeNexusGrch38Cache={
+                                this.store.genomeNexusGrch38Cache
+                            }
+                            genomeNexusMutationAssessorGrch38Cache={
+                                this.store
+                                    .genomeNexusMutationAssessorGrch38Cache
+                            }
+                            genomeNexusMyVariantInfoGrch38Cache={
+                                this.store.genomeNexusMyVariantInfoGrch38Cache
+                            }
                             pubMedCache={this.store.pubMedCache}
                             pdbHeaderCache={this.store.pdbHeaderCache}
+                            pdbHeaderGrch38Cache={
+                                this.store.pdbHeaderGrch38Cache
+                            }
                             myCancerGenomeData={this.store.myCancerGenomeData}
                             showTranscriptDropDown={true}
                             showOnlyAnnotatedTranscriptsInDropdown={
                                 !this.store.hasInputWithProteinChanges
+                            }
+                            isGrch38={
+                                this.referenceGenomeSelection ===
+                                referenceGenome.GRCH38
                             }
                         />
                     </MSKTab>
@@ -586,5 +657,11 @@ export default class MutationMapperTool extends React.Component<
     @action
     protected handleLoadExampleGeneAndProteinChange() {
         this.inputText = require('raw-loader!./resources/standaloneMutationDataExampleWithGeneAndProteinChangeOnly.txt');
+    }
+
+    @autobind
+    @action
+    protected handleUpdateReferenceGenomeSelection(isGrch38: boolean) {
+        this.store.updateReferenceGenome(isGrch38);
     }
 }

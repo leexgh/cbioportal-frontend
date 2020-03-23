@@ -15,6 +15,7 @@ import {
     EnsemblTranscript,
     remoteData,
     VariantAnnotation,
+    GenomeNexusAPI,
 } from 'cbioportal-frontend-commons';
 import {
     ClinicalData,
@@ -47,10 +48,17 @@ import MutationMapperStore from 'shared/components/mutationMapper/MutationMapper
 import { MutationTableDownloadDataFetcher } from 'shared/lib/MutationTableDownloadDataFetcher';
 import { normalizeMutations } from '../../../../shared/components/mutationMapper/MutationMapperUtils';
 import { IOncoKbData } from 'cbioportal-frontend-commons';
+import GenomeNexusGrch38Cache from 'shared/cache/GenomeNexusGrch38Cache';
+import GenomeNexusMutationAssessorGrch38Cache from 'shared/cache/GenomeNexusMutationAssessorGrch38Cache';
+import GenomeNexusMyVariantInfoGrch38Cache from 'shared/cache/GenomeNexusMyVariantInfoGrch38Cache';
+import PdbHeaderGrch38Cache from 'shared/cache/PdbHeaderGrch38Cache';
+import clientGrch38 from 'shared/api/genomeNexusGrch38ClientInstance';
+import internalClientGrch38 from 'shared/api/genomeNexusInternalGrch38ClientInstance';
 
 export default class MutationMapperToolStore {
     @observable mutationData: Partial<MutationInput>[] | undefined;
     @observable criticalErrors: Error[] = [];
+    @observable isGrch38: boolean = false;
 
     readonly genes = remoteData<Gene[]>(
         {
@@ -220,7 +228,8 @@ export default class MutationMapperToolStore {
                 await fetchVariantAnnotationsIndexedByGenomicLocation(
                     this.rawMutations,
                     ['annotation_summary', 'hotspots'],
-                    AppConfig.serverConfig.isoformOverrideSource
+                    AppConfig.serverConfig.isoformOverrideSource,
+                    this.genomeNexusClient
                 ),
             onError: (err: Error) => {
                 this.criticalErrors.push(err);
@@ -232,7 +241,11 @@ export default class MutationMapperToolStore {
     readonly hotspotData = remoteData({
         await: () => [this.mutations],
         invoke: () => {
-            return fetchHotspotsData(this.mutations);
+            return fetchHotspotsData(
+                this.mutations,
+                undefined,
+                this.genomeNexusInternalClient
+            );
         },
     });
 
@@ -285,7 +298,9 @@ export default class MutationMapperToolStore {
                                     this.indexedVariantAnnotations,
                                     this.oncoKbCancerGenes,
                                     this.oncoKbData,
-                                    this.uniqueSampleKeyToTumorType.result || {}
+                                    this.uniqueSampleKeyToTumorType.result ||
+                                        {},
+                                    this.isGrch38
                                 );
                                 return map;
                             },
@@ -388,21 +403,73 @@ export default class MutationMapperToolStore {
         return new PdbHeaderCache();
     }
 
+    @cached get genomeNexusGrch38Cache() {
+        return new GenomeNexusGrch38Cache();
+    }
+
+    @cached get genomeNexusMutationAssessorGrch38Cache() {
+        return new GenomeNexusMutationAssessorGrch38Cache();
+    }
+
+    @cached get genomeNexusMyVariantInfoGrch38Cache() {
+        return new GenomeNexusMyVariantInfoGrch38Cache();
+    }
+
+    @cached get pdbHeaderGrch38Cache() {
+        return new PdbHeaderGrch38Cache();
+    }
+
     @computed get myCancerGenomeData() {
         return fetchMyCancerGenomeData();
     }
 
-    @cached get downloadDataFetcher() {
-        return new MutationTableDownloadDataFetcher(
-            this.mutations,
-            undefined,
-            () => this.genomeNexusCache,
-            () => this.genomeNexusMutationAssessorCache,
-            () => this.genomeNexusMyVariantInfoCache
-        );
+    @computed get downloadDataFetcher() {
+        console.log('shibushi 38');
+
+        console.log(this.isGrch38);
+        console.log(this.genomeNexusGrch38Cache);
+        console.log(this.genomeNexusMutationAssessorGrch38Cache);
+        console.log(this.genomeNexusMyVariantInfoGrch38Cache);
+
+        if (this.isGrch38) {
+            return new MutationTableDownloadDataFetcher(
+                this.mutations,
+                undefined,
+                () => this.genomeNexusGrch38Cache,
+                () => this.genomeNexusMutationAssessorGrch38Cache,
+                () => this.genomeNexusMyVariantInfoGrch38Cache
+            );
+        } else {
+            return new MutationTableDownloadDataFetcher(
+                this.mutations,
+                undefined,
+                () => this.genomeNexusCache,
+                () => this.genomeNexusMutationAssessorCache,
+                () => this.genomeNexusMyVariantInfoCache
+            );
+        }
+        // return new MutationTableDownloadDataFetcher(
+        //     this.mutations,
+        //     undefined,
+        //     () => this.isGrch38 ? this.genomeNexusGrch38Cache : this.genomeNexusCache,
+        //     () => this.isGrch38 ? this.genomeNexusMutationAssessorGrch38Cache : this.genomeNexusMutationAssessorCache,
+        //     () => this.isGrch38 ? this.genomeNexusMyVariantInfoGrch38Cache : this.genomeNexusMyVariantInfoCache
+        // );
     }
 
     @action public clearCriticalErrors() {
         this.criticalErrors = [];
+    }
+
+    @action public updateReferenceGenome(isGrch38: boolean) {
+        this.isGrch38 = isGrch38;
+    }
+
+    @computed get genomeNexusClient() {
+        return this.isGrch38 ? clientGrch38 : undefined;
+    }
+
+    @computed get genomeNexusInternalClient() {
+        return this.isGrch38 ? internalClientGrch38 : undefined;
     }
 }

@@ -212,7 +212,12 @@ export function getOncoKbApiUrl() {
 
 export function getGenomeNexusApiUrl() {
     let url = AppConfig.serverConfig.genomenexus_url;
-    return getProxyUrlIfNecessary(url);
+    return url;
+}
+
+export function getGenomeNexusGrch38ApiUrl() {
+    let url = AppConfig.serverConfig.genomenexus_url_grch38;
+    return url;
 }
 
 export function buildGenomeNexusHgvsgUrl(hgvsg: string) {

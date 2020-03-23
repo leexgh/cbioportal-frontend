@@ -12,6 +12,7 @@ export interface IMutationMapperConfig {
     uniprot_id_url: string | null;
     ensembl_transcript_url: string | null;
     genomenexus_url: string | null;
+    genomenexus_url_grch38: string | null;
 }
 
 export function convertToMutationMapperProps(
@@ -19,6 +20,7 @@ export function convertToMutationMapperProps(
 ): Partial<IMutationMapperProps> {
     return {
         genomeNexusUrl: config.genomenexus_url || undefined,
+        genomeNexusUrlGrch38: config.genomenexus_url_grch38 || undefined,
         isoformOverrideSource: config.isoformOverrideSource,
         myGeneInfoUrlTemplate: config.mygene_info_url || undefined,
         uniprotIdUrlTemplate: config.uniprot_id_url || undefined,

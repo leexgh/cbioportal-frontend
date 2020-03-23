@@ -150,6 +150,11 @@ var config = {
                       cleanAndValidateUrl(process.env.GENOME_NEXUS_URL)
                   )
                 : '"replace_me_env_genome_nexus_url"',
+            ENV_GENOME_NEXUS_URL_GRCH38: process.env.GENOME_NEXUS_URL_GRCH38
+                ? JSON.stringify(
+                      cleanAndValidateUrl(process.env.GENOME_NEXUS_URL_GRCH38)
+                  )
+                : '"replace_me_env_genome_nexus_url_grch38"',
         }),
         new HtmlWebpackPlugin({ cache: false, template: 'my-index.ejs' }),
         WebpackFailPlugin,
