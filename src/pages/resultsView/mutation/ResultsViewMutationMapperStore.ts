@@ -25,6 +25,7 @@ import MutationMapperStore, {
     IMutationMapperStoreConfig,
 } from 'shared/components/mutationMapper/MutationMapperStore';
 import { IServerConfig } from '../../../config/IAppConfig';
+import { computed } from 'mobx';
 
 export default class ResultsViewMutationMapperStore extends MutationMapperStore {
     constructor(
@@ -98,5 +99,20 @@ export default class ResultsViewMutationMapperStore extends MutationMapperStore 
             this.getMutationCountCache,
             this.getDiscreteCNACache
         );
+    }
+
+    @computed
+    get isCanonicalTranscript() {
+        if (
+            this.canonicalTranscript.isComplete &&
+            this.canonicalTranscript.result &&
+            this.activeTranscript
+        ) {
+            return (
+                this.activeTranscript ===
+                this.canonicalTranscript.result.transcriptId
+            );
+        }
+        return undefined;
     }
 }

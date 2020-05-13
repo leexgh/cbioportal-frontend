@@ -141,6 +141,10 @@ export default class ResultsViewMutationMapper extends MutationMapper<
                 generateGenomeNexusHgvsgUrl={
                     this.props.store.generateGenomeNexusHgvsgUrl
                 }
+                isCanonicalTranscript={this.props.store.isCanonicalTranscript}
+                indexedAnnotatedMutationByGenomicLocation={
+                    this.props.store.indexedAnnotatedMutationByGenomicLocation
+                }
             />
         );
     }

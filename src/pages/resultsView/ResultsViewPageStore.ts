@@ -520,6 +520,20 @@ export class ResultsViewPageStore {
             },
             { fireImmediately: true }
         );
+
+        reaction(
+            () => this.genes.result,
+            // select first gene by default
+            genes => {
+                if (
+                    this.selectedGeneSymbol === undefined &&
+                    genes &&
+                    genes.length > 0
+                ) {
+                    this.selectedGeneSymbol = genes[0].hugoGeneSymbol;
+                }
+            }
+        );
     }
 
     destroy() {
@@ -574,6 +588,8 @@ export class ResultsViewPageStore {
     @computed get tabId() {
         return this.urlWrapper.tabId || ResultsViewTab.ONCOPRINT;
     }
+
+    @observable public selectedGeneSymbol: string | undefined = undefined;
 
     @observable public resultsPageSettingsVisible = false;
 
@@ -2787,77 +2803,62 @@ export class ResultsViewPageStore {
         },
     });
 
-    readonly mutationMapperStores = remoteData<{
-        [hugoGeneSymbol: string]: ResultsViewMutationMapperStore;
-    }>(
-        {
-            await: () => [
-                this.genes,
-                this.oncoKbCancerGenes,
-                this.uniqueSampleKeyToTumorType,
-                this.mutations,
-                this.mutationsByGene,
-            ],
-            invoke: () => {
-                if (this.genes.result) {
-                    // we have to use _.reduce, otherwise this.genes.result (Immutable, due to remoteData) will return
-                    //  an Immutable as the result of reduce, and MutationMapperStore when it is made immutable all the
-                    //  mobx machinery going on in the readonly remoteDatas and observables somehow gets messed up.
-                    return Promise.resolve(
-                        _.reduce(
-                            this.genes.result,
-                            (
-                                map: {
-                                    [hugoGeneSymbol: string]: ResultsViewMutationMapperStore;
-                                },
-                                gene: Gene
-                            ) => {
-                                map[
-                                    gene.hugoGeneSymbol
-                                ] = new ResultsViewMutationMapperStore(
-                                    AppConfig.serverConfig,
-                                    {},
-                                    gene,
-                                    this.samples,
-                                    this.oncoKbCancerGenes,
-                                    () =>
-                                        this.mutationsByGene.result![
-                                            gene.hugoGeneSymbol
-                                        ] || [],
-                                    () => this.mutationCountCache,
-                                    () => this.genomeNexusCache,
-                                    () => this.genomeNexusMutationAssessorCache,
-                                    () => this.discreteCNACache,
-                                    this.studyToMolecularProfileDiscreteCna.result!,
-                                    this.studyIdToStudy,
-                                    this.molecularProfileIdToMolecularProfile,
-                                    this.clinicalDataForSamples,
-                                    this.studiesForSamplesWithoutCancerTypeClinicalData,
-                                    this.germlineConsentedSamples,
-                                    this.indexedHotspotData,
-                                    this.indexedVariantAnnotations,
-                                    this.uniqueSampleKeyToTumorType.result!,
-                                    this.generateGenomeNexusHgvsgUrl,
-                                    this.genomeNexusClient,
-                                    this.genomeNexusInternalClient
-                                );
-                                return map;
-                            },
-                            {}
-                        )
-                    );
-                } else {
-                    return Promise.resolve({});
-                }
-            },
-        },
-        {}
-    );
+    @computed get selectedGene() {
+        return this.genes.result
+            ? _.find(
+                  this.genes.result,
+                  gene => gene.hugoGeneSymbol === this.selectedGeneSymbol
+              )
+            : undefined;
+    }
 
-    public getMutationMapperStore(
-        hugoGeneSymbol: string
-    ): ResultsViewMutationMapperStore | undefined {
-        return this.mutationMapperStores.result[hugoGeneSymbol];
+    @computed get mutationMapperStoreForSelectedGene() {
+        if (
+            this.genes.isComplete &&
+            this.oncoKbCancerGenes.isComplete &&
+            this.oncoKbCancerGenes &&
+            this.uniqueSampleKeyToTumorType &&
+            this.mutations &&
+            this.mutationsByGene &&
+            this.selectedGene
+        ) {
+            return new ResultsViewMutationMapperStore(
+                AppConfig.serverConfig,
+                {
+                    filterMutationsBySelectedTranscript: true,
+                },
+                this.selectedGene,
+                this.samples,
+                this.oncoKbCancerGenes,
+                () =>
+                    this.mutationsByGene.result![
+                        this.selectedGene!.hugoGeneSymbol
+                    ] || [],
+                () => this.mutationCountCache,
+                () => this.genomeNexusCache,
+                () => this.genomeNexusMutationAssessorCache,
+                () => this.discreteCNACache,
+                this.studyToMolecularProfileDiscreteCna.result!,
+                this.studyIdToStudy,
+                this.molecularProfileIdToMolecularProfile,
+                this.clinicalDataForSamples,
+                this.studiesForSamplesWithoutCancerTypeClinicalData,
+                this.germlineConsentedSamples,
+                this.indexedHotspotData,
+                this.indexedVariantAnnotations,
+                this.uniqueSampleKeyToTumorType.result!,
+                this.generateGenomeNexusHgvsgUrl,
+                this.genomeNexusClient,
+                this.genomeNexusInternalClient
+            );
+        }
+        return undefined;
+    }
+
+    public getMutationMapperStore():
+        | ResultsViewMutationMapperStore
+        | undefined {
+        return this.mutationMapperStoreForSelectedGene;
     }
 
     readonly oncoKbCancerGenes = remoteData(
@@ -4515,5 +4516,10 @@ export class ResultsViewPageStore {
         if (this.studies.result) {
             return isMixedReferenceGenome(this.studies.result);
         }
+    }
+    
+    @action
+    public setSelectedGeneSymbol(hugoGeneSymbol: string) {
+        this.selectedGeneSymbol = hugoGeneSymbol;
     }
 }

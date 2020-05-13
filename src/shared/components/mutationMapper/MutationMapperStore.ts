@@ -6,11 +6,12 @@ import {
     applyDataFilters,
     DataFilterType,
     DefaultMutationMapperDataFetcher,
-    DefaultMutationMapperStore,
     groupDataByProteinImpactType,
     groupOncoKbIndicatorDataByMutations,
     IHotspotIndex,
+    DefaultMutationMapperStore,
 } from 'react-mutation-mapper';
+
 import {
     getMutationsToTranscriptId,
     Mutation as SimpleMutation,
@@ -52,6 +53,7 @@ import MutationMapperDataStore from './MutationMapperDataStore';
 import {
     groupMutationsByProteinStartPos,
     countUniqueMutations,
+    indexMutationsByGenomicLocation,
 } from 'shared/lib/MutationUtils';
 
 import { IMutationMapperConfig } from './MutationMapperConfig';
@@ -241,6 +243,27 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
         return (this.mutationData.result || []).map(mutation => [mutation]);
     }
 
+    @computed get indexedAnnotatedMutationByGenomicLocation(): {
+        [genomicLocation: string]: Mutation;
+    } {
+        if (
+            this.mutationData.result &&
+            this.activeTranscript &&
+            this.indexedVariantAnnotations.result &&
+            !_.isEmpty(this.indexedVariantAnnotations.result)
+        ) {
+            // overwrite mutations to annotated mutations
+            return indexMutationsByGenomicLocation(getMutationsToTranscriptId(
+                this.mutationData.result,
+                this.activeTranscript,
+                this.indexedVariantAnnotations.result,
+                true
+            ) as Mutation[]);
+        } else {
+            return {};
+        }
+    }
+
     @computed get mergedAlignmentData(): IPdbChain[] {
         return mergeIndexedPdbAlignments(this.indexedAlignmentData);
     }
@@ -284,7 +307,8 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
                     getMutationsToTranscriptId(
                         this.getMutations(),
                         t,
-                        this.indexedVariantAnnotations.result!!
+                        this.indexedVariantAnnotations.result!,
+                        false
                     ),
                 ])
             );

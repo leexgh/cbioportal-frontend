@@ -2,9 +2,9 @@ import autobind from 'autobind-decorator';
 import { IOncoKbData, remoteData } from 'cbioportal-frontend-commons';
 import {
     genomicLocationString,
-    getMutationsToTranscriptId,
     groupMutationsByProteinStartPos,
     uniqueGenomicLocations,
+    getMutationsToTranscriptId,
 } from 'cbioportal-utils';
 import { Gene, Mutation, IMyVariantInfoIndex } from 'cbioportal-utils';
 import {
@@ -179,7 +179,8 @@ class DefaultMutationMapperStore implements MutationMapperStore {
             return getMutationsToTranscriptId(
                 this.getMutations(),
                 this.activeTranscript,
-                this.indexedVariantAnnotations.result
+                this.indexedVariantAnnotations.result,
+                false
             );
         } else {
             return this.getMutations();
@@ -594,7 +595,8 @@ class DefaultMutationMapperStore implements MutationMapperStore {
                             getMutationsToTranscriptId(
                                 this.getMutations(),
                                 t,
-                                this.indexedVariantAnnotations.result!
+                                this.indexedVariantAnnotations.result!,
+                                false
                             ).length > 0
                     );
                 } else {
@@ -878,7 +880,8 @@ class DefaultMutationMapperStore implements MutationMapperStore {
                     getMutationsToTranscriptId(
                         this.getMutations(),
                         t,
-                        this.indexedVariantAnnotations.result!!
+                        this.indexedVariantAnnotations.result!,
+                        false
                     ),
                 ])
             );

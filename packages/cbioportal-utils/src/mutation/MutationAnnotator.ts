@@ -101,7 +101,8 @@ export function filterMutationByTranscriptId(
 export function getMutationToTranscriptId(
     mutation: Mutation,
     ensemblTranscriptId: string,
-    indexedVariantAnnotations: { [genomicLocation: string]: VariantAnnotation }
+    indexedVariantAnnotations: { [genomicLocation: string]: VariantAnnotation },
+    overwrite?: boolean
 ): Mutation | undefined {
     const genomicLocation = extractGenomicLocation(mutation);
     const variantAnnotation = genomicLocation
@@ -127,23 +128,17 @@ export function getMutationToTranscriptId(
             mutation,
             variantAnnotation.annotation_summary,
             transcriptConsequenceSummary,
-            true
+            overwrite !== undefined ? overwrite : true
         );
-        // ignore mutations that don't have a protein change (at some point we
-        // might want to change this to include silent mutations)
-        if (
-            annotatedMutation.proteinChange &&
-            annotatedMutation.proteinChange.length > 0 &&
-            new RegExp(/.*[A-Z].*/, 'i').test(
-                annotatedMutation.proteinChange.toLowerCase()
-            )
-        ) {
-            return annotatedMutation as Mutation;
-        } else {
-            return undefined;
+        // do not ignore mutations that don't have a protein change
+        // include silent mutations
+        if (!annotatedMutation.proteinChange) {
+            annotatedMutation.proteinChange = '';
         }
+        return annotatedMutation as Mutation;
     } else {
-        return undefined;
+        // if mutation is not annotatable or can't map back (due to genomic location normalization or other reasons), return original mutation
+        return mutation;
     }
 }
 
@@ -213,16 +208,24 @@ export function getMutationFromSummary(
 export function getMutationsToTranscriptId(
     mutations: Mutation[],
     ensemblTranscriptId: string,
-    indexedVariantAnnotations: { [genomicLocation: string]: VariantAnnotation }
+    indexedVariantAnnotations: { [genomicLocation: string]: VariantAnnotation },
+    overwrite?: boolean
 ): Mutation[] {
-    return _.compact(
-        mutations.map(mutation =>
-            getMutationToTranscriptId(
-                mutation,
-                ensemblTranscriptId,
-                indexedVariantAnnotations
+    const fusionMutation = getFusionMutations(mutations);
+    // only non-fusion mutations need to get mutation with transcript id
+    const annotatableMutation = _.difference(mutations, fusionMutation);
+    return _.concat(
+        _.compact(
+            annotatableMutation.map(mutation =>
+                getMutationToTranscriptId(
+                    mutation,
+                    ensemblTranscriptId,
+                    indexedVariantAnnotations,
+                    overwrite
+                )
             )
-        )
+        ),
+        fusionMutation
     );
 }
 
@@ -336,4 +339,12 @@ export function genomicLocationStringFromVariantAnnotation(
         referenceAllele,
         variantAllele,
     });
+}
+
+export function getFusionMutations(mutations: Mutation[]) {
+    return mutations.filter(
+        (m: Mutation) =>
+            m.mutationType &&
+            new RegExp('fusion', 'i').test(m.mutationType.toLowerCase())
+    );
 }
