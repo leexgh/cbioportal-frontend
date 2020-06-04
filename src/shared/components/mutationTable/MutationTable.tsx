@@ -124,7 +124,7 @@ export interface IMutationTableProps {
     onRowMouseEnter?: (d: Mutation[]) => void;
     onRowMouseLeave?: (d: Mutation[]) => void;
     generateGenomeNexusHgvsgUrl: (hgvsg: string) => string;
-    indexedAnnotatedMutationByGenomicLocation?: {
+    indexedAnnotatedMutationsByGenomicLocation?: {
         [genomicLocation: string]: Mutation;
     };
 }

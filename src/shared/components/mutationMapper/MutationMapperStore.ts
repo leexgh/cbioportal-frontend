@@ -9,13 +9,17 @@ import {
     groupDataByProteinImpactType,
     groupOncoKbIndicatorDataByMutations,
     IHotspotIndex,
-    DefaultMutationMapperStore,
+    // DefaultMutationMapperStore,
 } from 'react-mutation-mapper';
+// REVERT THIS
+import DefaultMutationMapperStore from '../../../../packages/react-mutation-mapper/src/store/DefaultMutationMapperStore';
 
 import {
-    getMutationsToTranscriptId,
+    // getMutationsByTranscriptId,
     Mutation as SimpleMutation,
 } from 'cbioportal-utils';
+// REVERT THIS
+import { getMutationsByTranscriptId } from '../../../../packages/cbioportal-utils/src/mutation/MutationAnnotator';
 
 import defaultGenomeNexusClient from 'shared/api/genomeNexusClientInstance';
 import defaultInternalGenomeNexusClient from 'shared/api/genomeNexusInternalClientInstance';
@@ -243,20 +247,18 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
         return (this.mutationData.result || []).map(mutation => [mutation]);
     }
 
-    @computed get indexedAnnotatedMutationByGenomicLocation(): {
+    @computed get indexedAnnotatedMutationsByGenomicLocation(): {
         [genomicLocation: string]: Mutation;
     } {
         if (
-            this.mutationData.result &&
             this.activeTranscript &&
-            this.indexedVariantAnnotations.result &&
             !_.isEmpty(this.indexedVariantAnnotations.result)
         ) {
-            // overwrite mutations to annotated mutations
-            return indexMutationsByGenomicLocation(getMutationsToTranscriptId(
+            // overwrite mutations with annotated mutations
+            return indexMutationsByGenomicLocation(getMutationsByTranscriptId(
                 this.mutationData.result,
                 this.activeTranscript,
-                this.indexedVariantAnnotations.result,
+                this.indexedVariantAnnotations.result!,
                 true
             ) as Mutation[]);
         } else {
@@ -304,7 +306,7 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
             return _.fromPairs(
                 this.transcriptsWithAnnotations.result.map((t: string) => [
                     t,
-                    getMutationsToTranscriptId(
+                    getMutationsByTranscriptId(
                         this.getMutations(),
                         t,
                         this.indexedVariantAnnotations.result!,

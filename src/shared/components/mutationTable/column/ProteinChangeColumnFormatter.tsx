@@ -9,7 +9,7 @@ import TruncatedText from 'shared/components/TruncatedText';
 import MutationStatusColumnFormatter from './MutationStatusColumnFormatter';
 import styles from './proteinChange.module.scss';
 import {
-    extractAnnotatedMutation,
+    findMatchingAnnotatedMutation,
     indexMutationsByGenomicLocation,
 } from 'shared/lib/MutationUtils';
 import MutationTypeColumnFormatter from './MutationTypeColumnFormatter';
@@ -19,7 +19,7 @@ import { DefaultTooltip } from 'cbioportal-frontend-commons';
 export default class ProteinChangeColumnFormatter {
     public static getSortValue(
         d: Mutation[],
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         isCanonicalTranscript?: boolean
@@ -27,7 +27,7 @@ export default class ProteinChangeColumnFormatter {
         return calcProteinChangeSortValue(
             ProteinChangeColumnFormatter.getTextValue(
                 d,
-                indexedAnnotatedMutationByGenomicLocation,
+                indexedAnnotatedMutationsByGenomicLocation,
                 isCanonicalTranscript
             )
         );
@@ -35,7 +35,7 @@ export default class ProteinChangeColumnFormatter {
 
     public static getTextValue(
         data: Mutation[],
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         isCanonicalTranscript?: boolean
@@ -43,7 +43,7 @@ export default class ProteinChangeColumnFormatter {
         let textValue: string = '';
         const dataValue = ProteinChangeColumnFormatter.getData(
             data,
-            indexedAnnotatedMutationByGenomicLocation,
+            indexedAnnotatedMutationsByGenomicLocation,
             isCanonicalTranscript
         );
 
@@ -58,14 +58,14 @@ export default class ProteinChangeColumnFormatter {
         data: Mutation[],
         filterString: string,
         filterStringUpper: string,
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         isCanonicalTranscript?: boolean
     ): boolean {
         let filterValue = ProteinChangeColumnFormatter.getDisplayValue(
             data,
-            indexedAnnotatedMutationByGenomicLocation,
+            indexedAnnotatedMutationsByGenomicLocation,
             isCanonicalTranscript
         );
         const mutationStatus:
@@ -84,7 +84,7 @@ export default class ProteinChangeColumnFormatter {
 
     public static getDisplayValue(
         data: Mutation[],
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         isCanonicalTranscript?: boolean
@@ -92,14 +92,14 @@ export default class ProteinChangeColumnFormatter {
         // same as text value
         return ProteinChangeColumnFormatter.getTextValue(
             data,
-            indexedAnnotatedMutationByGenomicLocation,
+            indexedAnnotatedMutationsByGenomicLocation,
             isCanonicalTranscript
         );
     }
 
     public static getData(
         data: Mutation[],
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         isCanonicalTranscript?: boolean
@@ -107,7 +107,7 @@ export default class ProteinChangeColumnFormatter {
         if (data.length > 0) {
             return ProteinChangeColumnFormatter.getProteinChangeData(
                 data[0],
-                indexedAnnotatedMutationByGenomicLocation,
+                indexedAnnotatedMutationsByGenomicLocation,
                 isCanonicalTranscript
             );
         } else {
@@ -117,7 +117,7 @@ export default class ProteinChangeColumnFormatter {
 
     public static renderWithMutationStatus(
         data: Mutation[],
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         isCanonicalTranscript?: boolean,
@@ -128,14 +128,14 @@ export default class ProteinChangeColumnFormatter {
         // use text as display value
         const text: string = ProteinChangeColumnFormatter.getDisplayValue(
             data,
-            indexedAnnotatedMutationByGenomicLocation,
+            indexedAnnotatedMutationsByGenomicLocation,
             isCanonicalTranscript
         );
         const shouldShowWarning =
             data.length > 0
                 ? ProteinChangeColumnFormatter.shouldShowWarningForDataDifference(
                       data[0],
-                      indexedAnnotatedMutationByGenomicLocation,
+                      indexedAnnotatedMutationsByGenomicLocation,
                       indexedVariantAnnotations
                   )
                 : false;
@@ -187,17 +187,17 @@ export default class ProteinChangeColumnFormatter {
 
     private static getProteinChangeData(
         originalMutation: Mutation,
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         isCanonicalTranscript?: boolean
     ) {
         // non-canonical
         if (isCanonicalTranscript === false) {
-            const annotatedMutation = indexedAnnotatedMutationByGenomicLocation
-                ? extractAnnotatedMutation(
+            const annotatedMutation = indexedAnnotatedMutationsByGenomicLocation
+                ? findMatchingAnnotatedMutation(
                       originalMutation,
-                      indexedAnnotatedMutationByGenomicLocation
+                      indexedAnnotatedMutationsByGenomicLocation
                   )
                 : undefined;
             if (annotatedMutation) {
@@ -216,7 +216,7 @@ export default class ProteinChangeColumnFormatter {
 
     private static shouldShowWarningForDataDifference(
         originalMutation: Mutation,
-        indexedAnnotatedMutationByGenomicLocation?: {
+        indexedAnnotatedMutationsByGenomicLocation?: {
             [genomicLocation: string]: Mutation;
         },
         indexedVariantAnnotations?: {
@@ -234,8 +234,8 @@ export default class ProteinChangeColumnFormatter {
                       genomicLocationString(genomicLocation)
                   ]
                 : undefined;
-        // check if indexedAnnotatedMutationByGenomicLocation exists (only results view with enabled transcript dropdown will pass indexedAnnotatedMutationByGenomicLocation)
-        if (indexedAnnotatedMutationByGenomicLocation !== undefined) {
+        // check if indexedAnnotatedMutationsByGenomicLocation exists (only results view with enabled transcript dropdown will pass indexedAnnotatedMutationsByGenomicLocation)
+        if (indexedAnnotatedMutationsByGenomicLocation !== undefined) {
             // check if current mutation is annotated by genome nexus successfully
             if (annotatedMutation) {
                 // GN has data, do not show warning

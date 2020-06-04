@@ -102,17 +102,15 @@ export default class ResultsViewMutationMapperStore extends MutationMapperStore 
     }
 
     @computed
-    get isCanonicalTranscript() {
-        if (
-            this.canonicalTranscript.isComplete &&
-            this.canonicalTranscript.result &&
-            this.activeTranscript
-        ) {
+    get isCanonicalTranscript(): boolean | undefined {
+        if (this.canonicalTranscript.result && this.activeTranscript) {
+            // if transcript dropdown is enabled, return true for canonical transcript
             return (
                 this.activeTranscript ===
                 this.canonicalTranscript.result.transcriptId
             );
         }
+        // if transcript dropdown is disabled, return undefined
         return undefined;
     }
 }

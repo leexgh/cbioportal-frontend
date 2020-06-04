@@ -75,7 +75,9 @@ export default class ResultsViewMutationMapper extends MutationMapper<
             getMobxPromiseGroupStatus(
                 this.props.store.clinicalDataForSamples,
                 this.props.store.studiesForSamplesWithoutCancerTypeClinicalData,
-                this.props.store.canonicalTranscript
+                this.props.store.canonicalTranscript,
+                this.props.store.mutationData,
+                this.props.store.indexedVariantAnnotations
             ) === 'pending'
         );
     }
@@ -142,8 +144,8 @@ export default class ResultsViewMutationMapper extends MutationMapper<
                     this.props.store.generateGenomeNexusHgvsgUrl
                 }
                 isCanonicalTranscript={this.props.store.isCanonicalTranscript}
-                indexedAnnotatedMutationByGenomicLocation={
-                    this.props.store.indexedAnnotatedMutationByGenomicLocation
+                indexedAnnotatedMutationsByGenomicLocation={
+                    this.props.store.indexedAnnotatedMutationsByGenomicLocation
                 }
             />
         );

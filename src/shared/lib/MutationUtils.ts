@@ -366,7 +366,7 @@ export function isValidGenomicLocation(mutation: Partial<Mutation>): boolean {
     return false;
 }
 
-export function extractAnnotatedMutation(
+export function findMatchingAnnotatedMutation(
     originalMutation: Mutation,
     annotatedMutations: { [genomicLocation: string]: Mutation }
 ) {

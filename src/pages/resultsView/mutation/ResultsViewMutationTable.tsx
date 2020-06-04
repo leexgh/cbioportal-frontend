@@ -91,7 +91,7 @@ export default class ResultsViewMutationTable extends MutationTable<
 
         // disable annotation column if non canonical transcript is selected
         this._columns[MutationTableColumnType.ANNOTATION].shouldExclude = () =>
-            !this.props.isCanonicalTranscript;
+            this.props.isCanonicalTranscript === false;
 
         // order columns
         this._columns[MutationTableColumnType.STUDY].order = 0;
@@ -158,7 +158,7 @@ export default class ResultsViewMutationTable extends MutationTable<
         ) =>
             ProteinChangeColumnFormatter.renderWithMutationStatus(
                 d,
-                this.props.indexedAnnotatedMutationByGenomicLocation,
+                this.props.indexedAnnotatedMutationsByGenomicLocation,
                 this.props.isCanonicalTranscript,
                 this.props.indexedVariantAnnotations &&
                     this.props.indexedVariantAnnotations.result
@@ -170,7 +170,7 @@ export default class ResultsViewMutationTable extends MutationTable<
         ) =>
             ProteinChangeColumnFormatter.getTextValue(
                 d,
-                this.props.indexedAnnotatedMutationByGenomicLocation,
+                this.props.indexedAnnotatedMutationsByGenomicLocation,
                 this.props.isCanonicalTranscript
             );
         this._columns[MutationTableColumnType.PROTEIN_CHANGE].sortBy = (
@@ -178,7 +178,7 @@ export default class ResultsViewMutationTable extends MutationTable<
         ) =>
             ProteinChangeColumnFormatter.getSortValue(
                 d,
-                this.props.indexedAnnotatedMutationByGenomicLocation,
+                this.props.indexedAnnotatedMutationsByGenomicLocation,
                 this.props.isCanonicalTranscript
             );
         this._columns[MutationTableColumnType.PROTEIN_CHANGE].filter = (
@@ -190,7 +190,7 @@ export default class ResultsViewMutationTable extends MutationTable<
                 data,
                 filterString,
                 filterStringUpper,
-                this.props.indexedAnnotatedMutationByGenomicLocation,
+                this.props.indexedAnnotatedMutationsByGenomicLocation,
                 this.props.isCanonicalTranscript
             );
     }

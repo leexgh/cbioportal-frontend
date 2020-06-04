@@ -5,7 +5,7 @@ import { ResultsViewPageStore } from '../ResultsViewPageStore';
 import ResultsViewMutationMapper from './ResultsViewMutationMapper';
 import { convertToMutationMapperProps } from 'shared/components/mutationMapper/MutationMapperConfig';
 import MutationMapperUserSelectionStore from 'shared/components/mutationMapper/MutationMapperUserSelectionStore';
-import { observable, computed } from 'mobx';
+import { observable, computed, action } from 'mobx';
 import AppConfig from 'appConfig';
 import OqlStatusBanner from '../../../shared/components/banners/OqlStatusBanner';
 import autobind from 'autobind-decorator';
@@ -15,6 +15,8 @@ import './mutations.scss';
 import AlterationFilterWarning from '../../../shared/components/banners/AlterationFilterWarning';
 import { getOncoKbApiUrl } from 'shared/api/urls';
 import { Mutation } from 'cbioportal-ts-api-client';
+import _ from 'lodash';
+import LoadingIndicator from 'shared/components/loadingIndicator/LoadingIndicator';
 
 export interface IMutationsPageProps {
     routing?: any;
@@ -29,12 +31,19 @@ export default class Mutations extends React.Component<
 > {
     private userSelectionStore: MutationMapperUserSelectionStore;
 
-    @observable mutationsGeneTab: string;
+    @observable public selectedGeneSymbol: string;
+
+    @computed get selectedGene() {
+        return _.find(
+            this.props.store.genes.result,
+            gene => gene.hugoGeneSymbol === this.selectedGeneSymbol
+        );
+    }
 
     constructor(props: IMutationsPageProps) {
         super(props);
+        this.selectedGeneSymbol = this.props.store.hugoGeneSymbols[0];
         this.handleTabChange.bind(this);
-        this.mutationsGeneTab = this.props.store.hugoGeneSymbols![0];
         this.userSelectionStore = new MutationMapperUserSelectionStore();
     }
 
@@ -57,9 +66,7 @@ export default class Mutations extends React.Component<
     }
 
     public render() {
-        const activeTabId = this.props.store.selectedGeneSymbol
-            ? this.props.store.selectedGeneSymbol
-            : this.mutationsGeneTab;
+        const activeTabId = this.selectedGeneSymbol;
 
         return (
             <div data-test="mutationsTabDiv">
@@ -92,9 +99,7 @@ export default class Mutations extends React.Component<
         const tabs: JSX.Element[] = [];
 
         genes.forEach((gene: string) => {
-            const mutations = mutationsByGene
-                ? mutationsByGene[gene]
-                : undefined;
+            const mutations = mutationsByGene[gene];
 
             if (mutations) {
                 const tabHasMutations = mutations.length > 0;
@@ -110,7 +115,7 @@ export default class Mutations extends React.Component<
                         linkText={gene}
                         anchorStyle={anchorStyle}
                     >
-                        {this.props.store.selectedGeneSymbol === gene &&
+                        {this.selectedGeneSymbol === gene &&
                             this.geneTabContent}
                     </MSKTab>
                 );
@@ -121,14 +126,22 @@ export default class Mutations extends React.Component<
     }
 
     protected handleTabChange(id: string) {
-        this.props.store.setSelectedGeneSymbol(id);
+        this.setSelectedGeneSymbol(id);
+    }
+
+    @action
+    public setSelectedGeneSymbol(hugoGeneSymbol: string) {
+        this.selectedGeneSymbol = hugoGeneSymbol;
     }
 
     @computed get geneTabContent() {
         if (
-            this.props.store.selectedGene &&
-            this.props.store.mutationMapperStoreForSelectedGene
+            this.selectedGene &&
+            this.props.store.getMutationMapperStore(this.selectedGene)
         ) {
+            const mutationMapperStore = this.props.store.getMutationMapperStore(
+                this.selectedGene
+            )!;
             return (
                 <div>
                     <div className={'tabMessageContainer'}>
@@ -154,7 +167,7 @@ export default class Mutations extends React.Component<
                                     .excludeGermline,
                                 toggleExcludeVUS: this.onToggleVUS,
                                 toggleExcludeGermline: this.onToggleGermline,
-                                hugoGeneSymbol: this.props.store.selectedGene
+                                hugoGeneSymbol: this.selectedGene
                                     .hugoGeneSymbol,
                             }}
                         />
@@ -165,26 +178,21 @@ export default class Mutations extends React.Component<
                             // override ensemblLink
                             ensembl_transcript_url: this.props.store
                                 .ensemblLink,
-                            // only show oncokb and hotspots track if
-                            // show_oncokb and show_hotspot is set to true
-                            // canonical transcript is selected
+                            // only disable oncokb and hotspots track if
+                            // non-canonical transcript is selected
                             show_oncokb:
-                                AppConfig.serverConfig.show_oncokb === true
-                                    ? this.props.store
-                                          .mutationMapperStoreForSelectedGene
-                                          .isCanonicalTranscript
-                                    : AppConfig.serverConfig.show_oncokb,
+                                mutationMapperStore.isCanonicalTranscript !==
+                                false
+                                    ? AppConfig.serverConfig.show_oncokb
+                                    : false,
                             show_hotspot:
-                                AppConfig.serverConfig.show_hotspot === true
-                                    ? this.props.store
-                                          .mutationMapperStoreForSelectedGene
-                                          .isCanonicalTranscript
-                                    : AppConfig.serverConfig.show_hotspot,
+                                mutationMapperStore.isCanonicalTranscript !==
+                                false
+                                    ? AppConfig.serverConfig.show_hotspot
+                                    : false,
                         })}
                         oncoKbPublicApiUrl={getOncoKbApiUrl()}
-                        store={
-                            this.props.store.mutationMapperStoreForSelectedGene
-                        }
+                        store={mutationMapperStore}
                         trackVisibility={
                             this.userSelectionStore.trackVisibility
                         }
@@ -207,7 +215,10 @@ export default class Mutations extends React.Component<
                     />
                 </div>
             );
+        } else {
+            return (
+                <LoadingIndicator isLoading={true} center={true} size={'big'} />
+            );
         }
-        return <div></div>;
     }
 }
