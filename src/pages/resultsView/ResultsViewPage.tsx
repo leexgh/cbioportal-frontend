@@ -271,6 +271,7 @@ export default class ResultsViewPage extends React.Component<
                             <Mutations
                                 store={store}
                                 appStore={this.props.appStore}
+                                urlWrapper={this.urlWrapper}
                             />
                         </MSKTab>
                     );
