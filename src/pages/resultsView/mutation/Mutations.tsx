@@ -5,7 +5,7 @@ import { ResultsViewPageStore } from '../ResultsViewPageStore';
 import ResultsViewMutationMapper from './ResultsViewMutationMapper';
 import { convertToMutationMapperProps } from 'shared/components/mutationMapper/MutationMapperConfig';
 import MutationMapperUserSelectionStore from 'shared/components/mutationMapper/MutationMapperUserSelectionStore';
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, reaction } from 'mobx';
 import AppConfig from 'appConfig';
 import OqlStatusBanner from '../../../shared/components/banners/OqlStatusBanner';
 import autobind from 'autobind-decorator';
@@ -33,7 +33,14 @@ export default class Mutations extends React.Component<
 > {
     private userSelectionStore: MutationMapperUserSelectionStore;
 
-    @observable public selectedGeneSymbol: string;
+    @computed get selectedGeneSymbol() {
+        return this.props.urlWrapper.query.mutations_gene &&
+            this.props.store.hugoGeneSymbols.includes(
+                this.props.urlWrapper.query.mutations_gene
+            )
+            ? this.props.urlWrapper.query.mutations_gene
+            : this.props.store.hugoGeneSymbols[0];
+    }
 
     @computed get selectedGene() {
         return _.find(
@@ -42,15 +49,12 @@ export default class Mutations extends React.Component<
         );
     }
 
+    @computed get selectedTranscripId() {
+        return this.props.urlWrapper.query.mutations_transcript_id;
+    }
+
     constructor(props: IMutationsPageProps) {
         super(props);
-        this.selectedGeneSymbol =
-            this.props.urlWrapper.query.mutations_gene &&
-            this.props.store.hugoGeneSymbols.includes(
-                this.props.urlWrapper.query.mutations_gene
-            )
-                ? this.props.urlWrapper.query.mutations_gene
-                : this.props.store.hugoGeneSymbols[0];
         this.handleTabChange.bind(this);
         this.userSelectionStore = new MutationMapperUserSelectionStore();
     }
@@ -75,7 +79,6 @@ export default class Mutations extends React.Component<
 
     @action
     public setSelectedGeneSymbol(hugoGeneSymbol: string) {
-        this.selectedGeneSymbol = hugoGeneSymbol;
         this.props.urlWrapper.updateURL({
             mutations_gene: hugoGeneSymbol,
         });
@@ -148,10 +151,14 @@ export default class Mutations extends React.Component<
     @computed get geneTabContent() {
         if (
             this.selectedGene &&
-            this.props.store.getMutationMapperStore(this.selectedGene)
+            this.props.store.getMutationMapperStore(
+                this.selectedGene,
+                this.selectedTranscripId
+            )
         ) {
             const mutationMapperStore = this.props.store.getMutationMapperStore(
-                this.selectedGene
+                this.selectedGene,
+                this.selectedTranscripId
             )!;
             return (
                 <div>
@@ -223,6 +230,7 @@ export default class Mutations extends React.Component<
                         showTranscriptDropDown={
                             AppConfig.serverConfig.show_transcript_dropdown
                         }
+                        onTranscriptChange={this.onTranscriptChange}
                     />
                 </div>
             );
@@ -231,5 +239,13 @@ export default class Mutations extends React.Component<
                 <LoadingIndicator isLoading={true} center={true} size={'big'} />
             );
         }
+    }
+
+    @autobind
+    @action
+    protected onTranscriptChange(transcriptId: string) {
+        this.props.urlWrapper.updateURL({
+            mutations_transcript_id: transcriptId,
+        });
     }
 }
