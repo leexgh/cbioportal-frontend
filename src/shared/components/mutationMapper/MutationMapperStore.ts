@@ -248,13 +248,18 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
     } {
         if (
             this.activeTranscript.result &&
-            !_.isEmpty(this.indexedVariantAnnotations.result)
+            !_.isEmpty(this.indexedVariantAnnotations.result) &&
+            this.canonicalTranscript.isComplete
         ) {
             // overwrite mutations with annotated mutations
             return indexMutationsByGenomicLocation(getMutationsByTranscriptId(
                 this.mutationData.result,
                 this.activeTranscript.result,
                 this.indexedVariantAnnotations.result!,
+                this.canonicalTranscript.result
+                    ? this.canonicalTranscript.result.transcriptId ===
+                          this.activeTranscript.result
+                    : false,
                 true
             ) as Mutation[]);
         } else {
@@ -297,7 +302,8 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
     } {
         if (
             this.indexedVariantAnnotations.result &&
-            this.transcriptsWithAnnotations.result
+            this.transcriptsWithAnnotations.result &&
+            this.canonicalTranscript.isComplete
         ) {
             return _.fromPairs(
                 this.transcriptsWithAnnotations.result.map((t: string) => [
@@ -306,6 +312,10 @@ export default class MutationMapperStore extends DefaultMutationMapperStore {
                         this.getMutations(),
                         t,
                         this.indexedVariantAnnotations.result!,
+                        this.canonicalTranscript.result
+                            ? this.canonicalTranscript.result!.transcriptId ===
+                                  t
+                            : false,
                         false
                     ),
                 ])
