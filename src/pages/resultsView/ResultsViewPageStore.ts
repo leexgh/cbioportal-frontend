@@ -2824,7 +2824,8 @@ export class ResultsViewPageStore {
             this.uniqueSampleKeyToTumorType.result!,
             this.generateGenomeNexusHgvsgUrl,
             this.genomeNexusClient,
-            this.genomeNexusInternalClient
+            this.genomeNexusInternalClient,
+            () => this.urlWrapper.query.mutations_transcript_id
         );
         this.mutationMapperStoreByGene[gene.hugoGeneSymbol] = store;
         return store;
@@ -2845,7 +2846,7 @@ export class ResultsViewPageStore {
                 ? this.mutationMapperStoreByGene[gene.hugoGeneSymbol]
                 : this.createMutationMapperStoreForSelectedGene(gene);
 
-            autorun(() => store.setSelectedTranscript(selectedTranscriptId));
+            //autorun(() => store.setSelectedTranscript(selectedTranscriptId));
             return store;
         }
         return undefined;
