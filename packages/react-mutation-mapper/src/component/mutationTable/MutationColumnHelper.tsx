@@ -29,7 +29,7 @@ export enum MutationColumn {
     HGVSG = 'hgvsg',
     HGVSC = 'hgvsc',
     GNOMAD = 'gnomad',
-    CLINVAR = 'clinVarId',
+    CLINVAR = 'clinVar',
     DBSNP = 'dbsnp',
 }
 
@@ -46,7 +46,7 @@ export enum MutationColumnName {
     HGVSG = 'HGVSg',
     HGVSC = 'HGVSc',
     GNOMAD = 'gnomAD',
-    CLINVAR = 'ClinVar ID',
+    CLINVAR = 'ClinVar',
     DBSNP = 'dbSNP',
 }
 

@@ -73,7 +73,6 @@ import { getDefaultASCNMethodColumnDefinition } from 'shared/components/mutation
 import { getDefaultCancerCellFractionColumnDefinition } from 'shared/components/mutationTable/column/cancerCellFraction/CancerCellFractionColumnFormatter';
 import { getDefaultClonalColumnDefinition } from 'shared/components/mutationTable/column/clonal/ClonalColumnFormatter';
 import { getDefaultExpectedAltCopiesColumnDefinition } from 'shared/components/mutationTable/column/expectedAltCopies/ExpectedAltCopiesColumnFormatter';
-import { hasASCNProperty } from 'shared/lib/MutationUtils';
 
 export interface IMutationTableProps {
     studyIdToStudy?: { [studyId: string]: CancerStudy };
@@ -1035,7 +1034,7 @@ export default class MutationTable<
         };
 
         this._columns[MutationTableColumnType.CLINVAR] = {
-            name: 'ClinVar ID',
+            name: 'ClinVar',
             render: (d: Mutation[]) =>
                 ClinVarColumnFormatter.renderFunction(
                     d,
@@ -1066,7 +1065,7 @@ export default class MutationTable<
             ),
             defaultSortDirection: 'desc',
             visible: false,
-            align: 'right',
+            align: 'left',
         };
 
         this._columns[MutationTableColumnType.DBSNP] = {
