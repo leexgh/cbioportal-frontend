@@ -189,13 +189,18 @@ const useExternalFrontend = !process.env
 const useLocalDist = process.env.FRONTEND_TEST_USE_LOCAL_DIST;
 
 function waitForNetworkQuiet(timeout) {
-    browser.waitUntil(() => {
-        return (
-            browser.execute(function() {
-                return window.ajaxQuiet === true;
-            }).value == true
-        );
-    }, timeout);
+    browser.waitUntil(
+        () => {
+            return (
+                browser.execute(function() {
+                    return window.ajaxQuiet === true;
+                }) == true
+            );
+        },
+        {
+            timeout,
+        }
+    );
 }
 
 function getPortalUrlFromEnv() {
