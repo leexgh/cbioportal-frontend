@@ -61,13 +61,25 @@ export function extractExonInformation(
     return exonInfo;
 }
 
-export function formatExonLocation(exonLocation: number) {
+export function formatExonLocation(exonLocation: number, index?: number) {
     const numNucleotidesOver = Math.round(exonLocation * 3) % 3;
-    if (numNucleotidesOver === 0) {
-        return Math.round(exonLocation).toString();
-    } else if (numNucleotidesOver === 1) {
-        return Math.trunc(exonLocation).toString() + ' ⅓';
+    // for first exon or undefined index, format by exact location
+    // for other exons, start should be next location in order to distinguish from previous end location
+    if (index !== 0 && index !== undefined) {
+        if (numNucleotidesOver === 0) {
+            return Math.round(exonLocation).toString() + ' ⅓';
+        } else if (numNucleotidesOver === 1) {
+            return Math.trunc(exonLocation).toString() + ' ⅔';
+        } else {
+            return Math.trunc(exonLocation).toString() + 1;
+        }
     } else {
-        return Math.trunc(exonLocation).toString() + ' ⅔';
+        if (numNucleotidesOver === 0) {
+            return Math.round(exonLocation).toString();
+        } else if (numNucleotidesOver === 1) {
+            return Math.trunc(exonLocation).toString() + ' ⅓';
+        } else {
+            return Math.trunc(exonLocation).toString() + ' ⅔';
+        }
     }
 }
