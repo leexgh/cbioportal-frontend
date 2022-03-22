@@ -102,7 +102,10 @@ const getGenePanelIds = (props: PanelColumnFormatterProps) => {
             const isMutated = sample.id in mutatedSamples;
             const isProfiled =
                 sample.id in profiledSamples && profiledSamples[sample.id];
-            if (isProfiled && !isMutated) return '';
+            if (!isProfiled || (isProfiled && !isMutated)) {
+                return '';
+            }
+            // Only return gene panel id when sample is profiled AND is mutated
             return sampleToGenePanelId[sample.id] || 'N/A';
         });
 
