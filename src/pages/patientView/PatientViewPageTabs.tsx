@@ -37,6 +37,7 @@ import { HelpWidget } from 'shared/components/HelpWidget/HelpWidget';
 import MutationTableWrapper from './mutation/MutationTableWrapper';
 import { PatientViewPageInner } from 'pages/patientView/PatientViewPage';
 import { Else, If } from 'react-if';
+import SplicingTab from 'pages/patientView/splicingPlot/SplicingTab';
 
 export enum PatientViewPageTabs {
     Summary = 'summary',
@@ -49,6 +50,7 @@ export enum PatientViewPageTabs {
     TrialMatchTab = 'trialMatchTab',
     MutationalSignatures = 'mutationalSignatures',
     PathwayMapper = 'pathways',
+    Splicing = 'splicing',
 }
 
 export const PatientViewResourceTabPrefix = 'openResource_';
@@ -704,6 +706,18 @@ export function tabs(
                 />
             </MSKTab>
         );
+
+    // Splicing Sashimi Plot tab
+    tabs.push(
+        <MSKTab
+            key={11}
+            id={PatientViewPageTabs.Splicing}
+            linkText={'Splicing'}
+            unmountOnHide={false}
+        >
+            <SplicingTab />
+        </MSKTab>
+    );
 
     pageComponent.resourceTabs.component &&
         /* @ts-ignore */
